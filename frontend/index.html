@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Passwordless Auth</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: auto; padding-top: 30px; }
+    h2 { margin-top: 40px; }
+    input { width: 100%; padding: 8px; margin: 5px 0; }
+    button { padding: 10px; width: 100%; background-color: #007bff; color: white; border: none; margin-top: 10px; }
+    #response { margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>Register</h2>
+  <form id="registerForm">
+    <input type="email" id="regEmail" placeholder="Email" required><br>
+    <input type="text" id="regUsername" placeholder="Username" required><br>
+    <input type="password" id="regCatchphrase" placeholder="Catchphrase" required><br>
+    <button type="submit">Register</button>
+  </form>
+
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input type="password" id="loginCatchphrase" placeholder="Catchphrase" required><br>
+    <button type="submit">Login</button>
+  </form>
+
+  <div id="response"></div>
+
+  <script>
+    const EC = elliptic.ec;
+    const ec = new EC('secp256k1');
+
+    // SHA-256 hashing function (returns hex)
+    async function hashCatchphrase(text) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Register Form
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('regEmail').value;
+      const username = document.getElementById('regUsername').value;
+      const catchphrase = document.getElementById('regCatchphrase').value;
+
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, username, catchphrase })
+      });
+
+      const data = await response.json();
+      document.getElementById('response').innerText = data.message || data.error;
+    });
+
+    // Login Form
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const catchphrase = document.getElementById('loginCatchphrase').value;
+
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ catchphrase })
+      });
+
+      const data = await response.json();
+      document.getElementById('response').innerText =
+        data.message ? `Welcome, ${data.username} (${data.email})` : data.error;
+    });
+  </script>
+</body>
+</html>
