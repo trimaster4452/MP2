@@ -6,5 +6,6 @@ Clone the Repo.
 <p>in git VS Code Terminal/powershell, write the command: node server.js</p>
 
 <h2>step 2:</h2>
+Open a new terminal
 <p>in git VS Code Terminal/powershell, write the command: cd frontend</p>
 <p>in git VS Code Terminal/powershell, write the command: npx serve .</p>
