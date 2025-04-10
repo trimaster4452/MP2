@@ -1,6 +1,11 @@
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
   
+    if (!window.crypto?.subtle) {
+      alert("Your browser doesn't support crypto.subtle. Please use a modern browser over localhost or HTTPS.");
+      return;
+    }
+    
     const catchphrase = document.getElementById('catchphrase').value;
     const ec = new elliptic.ec('secp256k1');
     const sha256 = new TextEncoder().encode(catchphrase);
